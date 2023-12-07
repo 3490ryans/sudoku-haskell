@@ -4,6 +4,7 @@
 import Data.Char
 
 import SudokuBoard
+import SudokuSolver
 
 
 generateCoords :: String -> [Coord]
