@@ -1,6 +1,7 @@
 module SudokuSolver where
 
 import System.Random
+import System.Random.Shuffle
 
 import SudokuBoard
 
@@ -24,5 +25,16 @@ validBoard board = let squares = getSquares board
                        columns = getColumns board
                    in  and $ (map validSquare squares) ++ (map hasNoDups rows) ++ (map hasNoDups columns)
 
+
+seed :: Int
+seed = 257893
+
+numList :: [Integer]
+numList = [1..9]
+
+generator = mkStdGen seed
+
+-- some sort of draw random element function
+-- shuffle' [1..9] 9 generator
 
 -- generate a solved board

@@ -4,7 +4,7 @@ import Data.List
 import Data.Char
 
 data Cell = Num Integer | Empty
-	deriving (Show,Eq)
+    deriving (Show,Eq)
 
 type Square = (
         (Cell, Cell, Cell),
