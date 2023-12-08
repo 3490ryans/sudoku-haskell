@@ -4,7 +4,7 @@
 import Data.Char
 
 import SudokuBoard
-import SudokuSolver
+import Control.Exception
 
 
 generateCoords :: String -> [Coord]
@@ -56,9 +56,67 @@ printBoardPretty (ss1,ss2,ss3) = topBorder ++
                                  (printSquaresPretty ss3) ++
                                  bottomBorder
 
+-- saveBoardToFile :: String -> FilePath -> IO ()
+saveBoardToFile :: String -> FilePath -> IO ()
+saveBoardToFile boardString filePath = do
+    result <- try (writeFile filePath boardString) :: IO (Either SomeException ())
+    case result of
+        Left e -> putStrLn $ "Error: " ++ show e
+        Right _ -> putStrLn $ "Sudoku board saved to: " ++ filePath
+
+-- Read Sudoku board from file
+readBoardFromFile :: FilePath -> IO Board
+readBoardFromFile filePath = do
+    content <- readFile filePath
+    return (parseBoard content)
+
+boardToString :: Board -> String
+boardToString (rows1, rows2, rows3) =
+    concatMap getRows [rows1, rows2, rows3]
+  where
+    getRows :: (Square, Square, Square) -> String
+    getRows (s1, s2, s3) =
+        concatMap getRow ['a', 'b', 'c']
+      where
+        getRow :: Char -> String
+        getRow y =
+            printSquareRowPretty s1 y ++ " " ++
+            printSquareRowPretty s2 y ++ " " ++
+            printSquareRowPretty s3 y ++ "\n"
+
+
 exampleBoard = "000000013400200000600000000000460500010000007200500000000031000000000420080000000"
 
 main :: IO ()
 main = do
-    let newboard = parseBoard exampleBoard
-    putStr $ printBoardPretty newboard
+    putStrLn "Enter the path to your Sudoku board file (.sudoku):"
+    filePath <- getLine
+
+    result <- try (readBoardFromFile filePath) :: IO (Either SomeException Board)
+    case result of
+        Left e -> putStrLn $ "Error reading the Sudoku board: " ++ show e
+        Right newboard -> do
+            putStr $ printBoardPretty newboard
+            putStrLn $ "Sudoku board loaded from file: " ++ filePath
+
+            -- Saving Process
+            putStrLn "Do you want to save the Sudoku board? (y/n)"
+            userChoice <- getLine
+
+            case userChoice of
+                "y" -> do
+                    putStrLn "Enter the path to save your Sudoku board file (.sudoku):"
+                    savePath <- getLine
+
+                    let boardString = boardToString newboard
+
+                    -- Save the Sudoku board string to the specified file
+                    saveBoardToFile boardString savePath
+
+                    putStrLn $ "Sudoku board saved to file: " ++ savePath
+
+                "n" -> putStrLn "Sudoku board not saved."
+
+                _ -> do
+                    putStrLn "Invalid choice. Please enter 'y' or 'n'."
+                    main
