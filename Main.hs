@@ -4,6 +4,8 @@
 import Data.Char
 
 import SudokuBoard
+import System.IO
+import Control.Exception
 
 
 generateCoords :: String -> [Coord]
@@ -55,9 +57,35 @@ printBoardPretty (ss1,ss2,ss3) = topBorder ++
                                  (printSquaresPretty ss3) ++
                                  bottomBorder
 
+-- saveBoardToFile :: String -> FilePath -> IO ()
+saveBoardToFile :: String -> FilePath -> IO ()
+saveBoardToFile boardString filePath = do
+    result <- try (writeFile filePath boardString) :: IO (Either SomeException ())
+    case result of
+        Left e -> putStrLn $ "Error: " ++ show e
+        Right _ -> putStrLn $ "Sudoku board saved to: " ++ filePath
+
 exampleBoard = "000000013400200000600000000000460500010000007200500000000031000000000420080000000"
+
+-- main :: IO ()
+-- main = do
+--     let newboard = parseBoard exampleBoard
+--     putStr $ printBoardPretty newboard
 
 main :: IO ()
 main = do
-    let newboard = parseBoard exampleBoard
+    putStrLn "Enter your Sudoku board (use 0 for empty cells):"
+    userInput <- getLine
+    -- _ <- getLine  -- Consume the newline character in the buffer
+
+    let newboard = parseBoard userInput
     putStr $ printBoardPretty newboard
+
+    -- putStrLn "Do you want to save this Sudoku board to a file? (y/n)"
+    -- saveOption <- getLine
+    -- case saveOption of
+    --     "y" -> do
+    --         putStrLn "Enter the file path to save the Sudoku board:"
+    --         filePath <- getLine
+    --         saveBoardToFile userInput filePath
+    --     _   -> putStrLn "Sudoku board not saved."
