@@ -71,6 +71,18 @@ readBoardFromFile filePath = do
     content <- readFile filePath
     return (parseBoard content)
 
+-- Was looking at the getRows branch , assuming it works how I think it works and coding from there.
+boardToString :: Board -> String
+boardToString board =
+  intercalate "\n" $ map rowToString $ getRows board
+  where
+    cellToString :: Cell -> String
+    cellToString (Num n) = show n
+    cellToString Empty = "."
+
+    rowToString :: Row -> String
+    rowToString row = intercalate " " $ map cellToString row
+
 exampleBoard = "000000013400200000600000000000460500010000007200500000000031000000000420080000000"
 
 -- main :: IO ()
@@ -89,3 +101,25 @@ main = do
         Right newboard -> do
             putStr $ printBoardPretty newboard
             putStrLn $ "Sudoku board loaded from file: " ++ filePath
+
+            -- Saving Process
+            putStrLn "Do you want to save the Sudoku board? (y/n)"
+            userChoice <- getLine
+
+            case userChoice of
+                "y" -> do
+                    putStrLn "Enter the path to save your Sudoku board file (.sudoku):"
+                    savePath <- getLine
+
+                    let boardString = boardToString newboard
+
+                    -- Save the Sudoku board string to the specified file
+                    saveBoardToFile boardString savePath
+
+                    putStrLn $ "Sudoku board saved to file: " ++ savePath
+
+                "n" -> putStrLn "Sudoku board not saved."
+
+                _ -> do
+                    putStrLn "Invalid choice. Please enter 'y' or 'n'."
+                    main
