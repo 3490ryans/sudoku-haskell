@@ -41,7 +41,7 @@ goodNums board c@(y,x) = let row = [n | Num n <- (getRow board y)]
                              column = [n | Num n <- (getColumn board x)]
                              square = foldr (\x y -> thrupleElems x ++ y) [] (thrupleElems $ getSquare board c)
                              squarecells = [n | Num n <- square]
-                         in ([1..9] \\ row) \\ column
+                         in (([1..9] \\ row) \\ column) \\ squarecells
 
 drawElement :: (Eq a) => [a] -> IO (Maybe a, [a])
 drawElement [] = do
@@ -53,6 +53,9 @@ drawElement xs = do
 
 guessCoords :: Board -> [Coord] -> [Guess]
 guessCoords board cs = zip cs [goodNums board c | c <- cs]
+
+updateGuesses :: Board -> [Guess] -> [Guess]
+updateGuesses board gs = guessCoords board (fst $ unzip gs)
 
 compareGuesses :: Guess -> Guess -> Ordering
 compareGuesses (c1, n1) (c2, n2) | length n1 < length n2 = LT
@@ -78,31 +81,46 @@ tryGenerateCell g@(board, coord, nums) = do
 generateCells :: Board -> [GenState] -> [Guess] -> IO Board
 generateCells board [] [] = do
     return board
-generateCells board [] (c:cs) = generateCells board [(board, c, (goodNums board c))] cs
+generateCells board [] (c:cs) = generateCells board [(board, fst c, snd c)] cs
 generateCells board [g] cs = do
     attempt <- tryGenerateCell g
     case attempt of
         Just b -> if length cs > 0
-                  then generateCells board ((b, head cs, (goodNums b (head cs))) : g : []) (tail cs)
+                  then let (ng:ngs) = sortGuesses $ updateGuesses b cs
+                       in  generateCells board ((b, fst ng, snd ng) : g : []) ngs
                   else return b
         Nothing -> return board
 generateCells board (g:h:gs) cs = do
-    case snd3 g of
-        ('a',_) -> putStrLn $ show g
-        otherwise -> return ()
     attempt <- tryGenerateCell g
     case attempt of
         Just b -> if length cs > 0
-                  then generateCells board ((b, head cs, (goodNums b (head cs))) : g : h : gs) (tail cs)
+                  then let (ng:ngs) = sortGuesses $ updateGuesses b cs
+                       in  generateCells board ((b, fst ng, snd ng) : g : h : gs) ngs
                   else return b
-        Nothing -> generateCells board (newNums (fst3 g) h : gs) (snd3 g : cs)
+        Nothing -> let ngs = delete (snd3 h, thd3 h) (sortGuesses $ updateGuesses (fst3 h) ((snd3 g, thd3 g) : cs))
+                   in  generateCells board (newNums (fst3 g) h : gs) ngs
 
 generateSolvedBoard :: IO Board
 generateSolvedBoard = do
-    generateCells emptyBoard [] allCoords
+    generateCells emptyBoard [] (guessCoords emptyBoard allCoords)
 
 
 solveBoard :: Board -> IO Board
 solveBoard board = do
-    generateCells board [] (getEmptyCells board)
+    generateCells board [] (sortGuesses $ guessCoords board (getEmptyCells board))
 
+
+removeRandomCells :: Board -> Integer -> [Coord] -> IO Board
+removeRandomCells board 0 _ = do
+    return board
+removeRandomCells board n coords | n >= 1 && n <= 81 = do
+    (c,cs) <- drawElement coords
+    case c of
+        Just co -> removeRandomCells (updateBoard board co Empty) (n-1) cs
+        Nothing -> return board
+
+generatePuzzle :: Integer -> IO Board
+generatePuzzle difficulty = do
+    board <- generateSolvedBoard
+    puzzleBoard <- removeRandomCells board difficulty allCoords
+    return puzzleBoard
