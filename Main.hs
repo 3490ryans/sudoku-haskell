@@ -105,7 +105,7 @@ handleChoice :: String -> Board -> IO ()
 handleChoice "1" currentBoard = do
     -- Put instructions to generate sudoku Puzzle here
     putStrLn "Generating a new Sudoku Puzzle..."
-    newBoard <- generatePuzzle 5  -- Use <- to extract the Board from IO Board
+    newBoard <- generatePuzzle 5
     putStrLn $ printBoardPretty newBoard
     subMenu newBoard
 
@@ -147,7 +147,7 @@ handleSubChoice :: String -> Board -> IO ()
 handleSubChoice "1" currentBoard = do
     -- Put instructions to generate sudoku Puzzle here
     putStrLn "Generating a new Sudoku Puzzle..."
-    let newBoard = generatePuzzle 5  -- Logic to generate a new board
+    newBoard <- generatePuzzle 5
     putStrLn $ printBoardPretty newBoard
     subMenu newBoard
 
@@ -166,18 +166,20 @@ handleSubChoice "2" currentBoard = do
 
 handleSubChoice "3" currentBoard = do
     -- Put instructions to SOLVE sudoku Puzzle here
-    solvedBoard <- solveBoard currentBoard  -- Use <- to extract the Board from IO Board
+    solvedBoard <- solveBoard currentBoard
+    putStrLn "Solved Sudoku Puzzle:"
+    putStrLn $ printBoardPretty solvedBoard
     subMenu solvedBoard
 
 handleSubChoice "4" currentBoard = do
     -- Put instructions to CHECK sudoku Puzzle here
-    isValid <- validBoard currentBoard  -- Use <- to extract the Board from IO Board
+    let isValid = validBoard currentBoard  
     subMenu currentBoard
 
 handleSubChoice "5" currentBoard = do
     -- Put instructions to SAVE sudoku Puzzle here
     -- Saving Process
-    putStrLn "Do you want to save the Sudoku board? (y/n)"
+    putStrLn "Do you want to save the Sudoku board? Saving will stop the program!! (y/n)"
     userChoice <- getLine
 
     case userChoice of
