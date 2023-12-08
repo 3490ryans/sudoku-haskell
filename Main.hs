@@ -2,10 +2,10 @@
 --- Rou Yan Ling
 --- Ryan Densmore
 import Data.Char
-
-import SudokuBoard
 import System.IO
 import Control.Exception
+
+import SudokuBoard
 
 
 generateCoords :: String -> [Coord]
@@ -65,6 +65,12 @@ saveBoardToFile boardString filePath = do
         Left e -> putStrLn $ "Error: " ++ show e
         Right _ -> putStrLn $ "Sudoku board saved to: " ++ filePath
 
+-- Read Sudoku board from file
+readBoardFromFile :: FilePath -> IO Board
+readBoardFromFile filePath = do
+    content <- readFile filePath
+    return (parseBoard content)
+
 exampleBoard = "000000013400200000600000000000460500010000007200500000000031000000000420080000000"
 
 -- main :: IO ()
@@ -74,21 +80,12 @@ exampleBoard = "0000000134002000006000000000004605000100000072005000000000310000
 
 main :: IO ()
 main = do
-    putStrLn "Enter your Sudoku board (use 0 for empty cells):"
-    userInput <- getLine
-    -- _ <- getLine  -- Consume the newline character in the buffer
+    putStrLn "Enter the path to your Sudoku board file (.sudoku):"
+    filePath <- getLine
 
-    let newboard = parseBoard userInput
-    putStr $ printBoardPretty newboard
-
-    putStrLn $ "Original Sudoku board string: " ++ userInput
-
-    -- putStrLn "Do you want to save this Sudoku board to a file? (y/n)"
-    -- saveOption <- getLine
-    -- case saveOption of
-    --     "y" -> do
-    --         putStrLn "Enter the file path to save the Sudoku board:"
-    --         filePath <- getLine
-    --         saveBoardToFile userInput filePath
-    --     "n" -> putStrLn $ "Original Sudoku board string: " ++ userInput
-    --     _   -> putStrLn "Sudoku board not saved."
+    result <- try (readBoardFromFile filePath) :: IO (Either SomeException Board)
+    case result of
+        Left e -> putStrLn $ "Error reading the Sudoku board: " ++ show e
+        Right newboard -> do
+            putStr $ printBoardPretty newboard
+            putStrLn $ "Sudoku board loaded from file: " ++ filePath
