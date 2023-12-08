@@ -37,6 +37,9 @@ emptyBoard = (
 
 type Coord = (Char, Integer)
 
+allCoords :: [Coord]
+allCoords = [(y,x) | y <- ['a'..'i'], x <- [1..9]]
+
 type Updates = [(Coord, Cell)]
 
 -- returns the elemnts of a triple tuple as a list
@@ -75,6 +78,10 @@ getSmallX x | x `elem` [1,4,7] = 1
             | x `elem` [2,5,8] = 2
             | x `elem` [3,6,9] = 3
 
+-- returns Square at Coord
+getSquare :: Board -> Coord -> Square
+getSquare board (y,x) = getBigX (getBigY board y) x
+
 -- returns list of Squares in a Board
 getSquares :: Board -> [Square]
 getSquares board = foldr (\x y -> thrupleElems x ++ y) [] (thrupleElems board)
@@ -88,6 +95,10 @@ getMiniRow (cs1,cs2,cs3) 'c' = thrupleElems cs3
 -- returns Row from a board
 getRow :: Board -> Char -> Row
 getRow board c = foldr (\x y -> (getMiniRow x (getSmallY c)) ++ y) [] (thrupleElems $ getBigY board c)
+
+-- returns Cell on the board given a coordinate
+getCell :: Board -> Coord -> Cell
+getCell board (y,x) = (getRow board y) !! (fromIntegral x - 1)
 
 -- returns list of Rows in a board
 getRows :: Board -> [Row]
@@ -108,6 +119,11 @@ getColumn board n = let bigCol = foldr (\x y -> (getBigX x n) : y) [] (thrupleEl
 -- returns list of Columns in a board
 getColumns :: Board -> [Column]
 getColumns board = [getColumn board n | n <- [1..9]]
+
+
+
+getEmptyCells :: Board -> [Coord]
+getEmptyCells board = [coord | coord <- allCoords, (getCell board coord) == Empty]
 
 
 updateCells :: (Cell,Cell,Cell) -> Integer -> Cell -> (Cell,Cell,Cell)
