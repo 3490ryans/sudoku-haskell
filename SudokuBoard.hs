@@ -12,20 +12,22 @@ type Square = (
         (Cell, Cell, Cell)
     )
 
+type Board = (
+        (Square, Square, Square),
+        (Square, Square, Square),
+        (Square, Square, Square)
+    )
+
+type Row = [Cell]
+type Column = [Cell]
+type Coord = (Char, Integer)
+
+
 emptySquare :: Square
 emptySquare = (
         (Empty, Empty, Empty),
         (Empty, Empty, Empty),
         (Empty, Empty, Empty)
-    )
-
-type Row = [Cell]
-type Column = [Cell]
-
-type Board = (
-        (Square, Square, Square),
-        (Square, Square, Square),
-        (Square, Square, Square)
     )
 
 emptyBoard :: Board
@@ -35,7 +37,6 @@ emptyBoard = (
         (emptySquare, emptySquare, emptySquare)
     )
 
-type Coord = (Char, Integer)
 
 allCoords :: [Coord]
 allCoords = [(y,x) | y <- ['a'..'i'], x <- [1..9]]
