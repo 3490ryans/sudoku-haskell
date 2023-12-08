@@ -5,6 +5,10 @@ import Data.Char
 
 import SudokuBoard
 import Control.Exception
+import System.Exit (exitSuccess)
+import SudokuSolver
+import SudokuSolver (validBoard, solveBoard)
+
 
 
 generateCoords :: String -> [Coord]
@@ -89,34 +93,115 @@ exampleBoard = "0000000134002000006000000000004605000100000072005000000000310000
 
 main :: IO ()
 main = do
+    putStrLn "Sudoku Menu:"
+    putStrLn "1. Generate a new Sudoku Puzzle"
+    putStrLn "2. Load a .sudoku File"
+    putStrLn "Q. Quit"
+    putStr "Choose an option: "
+    choice <- getLine
+    handleChoice choice emptyBoard  -- Pass emptyBoard as the initial board
+
+handleChoice :: String -> Board -> IO ()
+handleChoice "1" currentBoard = do
+    -- Put instructions to generate sudoku Puzzle here
+    putStrLn "Generating a new Sudoku Puzzle..."
+    newBoard <- generatePuzzle 5  -- Use <- to extract the Board from IO Board
+    putStrLn $ printBoardPretty newBoard
+    subMenu newBoard
+
+handleChoice "2" currentBoard = do
+    -- Put instructions on how to load .sudoku file here
     putStrLn "Enter the path to your Sudoku board file (.sudoku):"
     filePath <- getLine
 
     result <- try (readBoardFromFile filePath) :: IO (Either SomeException Board)
     case result of
         Left e -> putStrLn $ "Error reading the Sudoku board: " ++ show e
-        Right newboard -> do
-            putStr $ printBoardPretty newboard
+        Right newBoard -> do
+            putStrLn $ printBoardPretty newBoard
             putStrLn $ "Sudoku board loaded from file: " ++ filePath
+            subMenu newBoard
 
-            -- Saving Process
-            putStrLn "Do you want to save the Sudoku board? (y/n)"
-            userChoice <- getLine
+handleChoice "Q" _ = do
+    putStrLn "Quitting..."
+    exitSuccess
 
-            case userChoice of
-                "y" -> do
-                    putStrLn "Enter the path to save your Sudoku board file (.sudoku):"
-                    savePath <- getLine
+handleChoice _ currentBoard = do
+    putStrLn "Invalid choice. Please choose again."
+    main
 
-                    let boardString = boardToString newboard
+subMenu :: Board -> IO ()
+subMenu currentBoard = do
+    putStrLn "Submenu:"
+    putStrLn "1. Generate a new Sudoku Puzzle"
+    putStrLn "2. Load a .sudoku File"
+    putStrLn "3. Solve Sudoku Puzzle"
+    putStrLn "4. Check Sudoku Puzzle"
+    putStrLn "5. Save Sudoku Puzzle"
+    putStrLn "Q. Quit"
+    putStr "Choose an option: "
+    choice <- getLine
+    handleSubChoice choice currentBoard
 
-                    -- Save the Sudoku board string to the specified file
-                    saveBoardToFile boardString savePath
+handleSubChoice :: String -> Board -> IO ()
+handleSubChoice "1" currentBoard = do
+    -- Put instructions to generate sudoku Puzzle here
+    putStrLn "Generating a new Sudoku Puzzle..."
+    let newBoard = generatePuzzle 5  -- Logic to generate a new board
+    putStrLn $ printBoardPretty newBoard
+    subMenu newBoard
 
-                    putStrLn $ "Sudoku board saved to file: " ++ savePath
+handleSubChoice "2" currentBoard = do
+    -- Put instructions on how to load .sudoku file here
+    putStrLn "Enter the path to your Sudoku board file (.sudoku):"
+    filePath <- getLine
 
-                "n" -> putStrLn "Sudoku board not saved."
+    result <- try (readBoardFromFile filePath) :: IO (Either SomeException Board)
+    case result of
+        Left e -> putStrLn $ "Error reading the Sudoku board: " ++ show e
+        Right newBoard -> do
+            putStrLn $ printBoardPretty newBoard
+            putStrLn $ "Sudoku board loaded from file: " ++ filePath
+            subMenu newBoard
 
-                _ -> do
-                    putStrLn "Invalid choice. Please enter 'y' or 'n'."
-                    main
+handleSubChoice "3" currentBoard = do
+    -- Put instructions to SOLVE sudoku Puzzle here
+    solvedBoard <- solveBoard currentBoard  -- Use <- to extract the Board from IO Board
+    subMenu solvedBoard
+
+handleSubChoice "4" currentBoard = do
+    -- Put instructions to CHECK sudoku Puzzle here
+    isValid <- validBoard currentBoard  -- Use <- to extract the Board from IO Board
+    subMenu currentBoard
+
+handleSubChoice "5" currentBoard = do
+    -- Put instructions to SAVE sudoku Puzzle here
+    -- Saving Process
+    putStrLn "Do you want to save the Sudoku board? (y/n)"
+    userChoice <- getLine
+
+    case userChoice of
+        "y" -> do
+            putStrLn "Enter the path to save your Sudoku board file (.sudoku):"
+            savePath <- getLine
+
+            let boardString = boardToString currentBoard
+
+            -- Save the Sudoku board string to the specified file
+            saveBoardToFile boardString savePath
+
+            putStrLn $ "Sudoku board saved to file: " ++ savePath
+
+        "n" -> putStrLn "Sudoku board not saved."
+
+        _ -> do
+            putStrLn "Invalid choice. Please enter 'y' or 'n'."
+            subMenu currentBoard
+
+handleSubChoice "Q" _ = do
+    putStrLn "Quitting..."
+    exitSuccess
+
+handleSubChoice _ currentBoard = do
+    putStrLn "Invalid choice. Please choose again."
+    subMenu currentBoard
