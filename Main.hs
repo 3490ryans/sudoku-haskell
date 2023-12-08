@@ -81,6 +81,8 @@ main = do
     let newboard = parseBoard userInput
     putStr $ printBoardPretty newboard
 
+    putStrLn $ "Original Sudoku board string: " ++ userInput
+
     -- putStrLn "Do you want to save this Sudoku board to a file? (y/n)"
     -- saveOption <- getLine
     -- case saveOption of
@@ -88,4 +90,5 @@ main = do
     --         putStrLn "Enter the file path to save the Sudoku board:"
     --         filePath <- getLine
     --         saveBoardToFile userInput filePath
+    --     "n" -> putStrLn $ "Original Sudoku board string: " ++ userInput
     --     _   -> putStrLn "Sudoku board not saved."
