@@ -1,7 +1,7 @@
 module SudokuSolver where
 
 import Control.Monad
-import Data.List
+import Data.List (sortBy, delete, (\\))
 import System.Random
 
 import SudokuBoard
