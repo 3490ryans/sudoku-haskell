@@ -6,5 +6,5 @@ run:
 	cd bin && ./sudoku-exe
 
 clean:
-	rm bin/sudoku-exe
+	-rm bin/sudoku-exe
 	stack clean
