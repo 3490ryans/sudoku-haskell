@@ -1,10 +1,9 @@
-build:
-	
+build:	
 	stack setup
 	stack install
 
 run:
-	bin/sudoku-exe
+	cd bin && ./sudoku-exe
 
 clean:
 	rm bin/sudoku-exe
